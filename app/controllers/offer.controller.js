@@ -10,6 +10,30 @@ exports.create = (req, res) => {
     return;
   }
 
+  //check if user already made an offer for this request
+  Offer.findOne(
+    {
+      request: req.params.id,
+      volunteer: req.body.volunteer,
+    },
+    function (err, offer) {
+      if (err) {
+        res.status(500).send({
+          message: err.message || "Some error occurred while creating the Offer.",
+        });
+      } else if (offer) {
+        res.status(400).send({
+          message: "You already made an offer for this request!",
+        });
+      } else {
+
+      
+
+  var count = 0;
+  Offer.find().count().then((data) => {
+    count = data;
+    });
+
   var today = new Date();
   var dd = String(today.getDate()).padStart(2, "0");
   var mm = String(today.getMonth() + 1).padStart(2, "0"); //January is 0!
@@ -18,20 +42,20 @@ exports.create = (req, res) => {
 
   //find request by id and push offer to request array called offers
   db.requests
-    .findById(req.body.requestID)
+    .findById(req.params.id)
     .then((data) => {
       if (!data)
         res
           .status(404)
-          .send({ message: "Not found Request with id " + req.body.requestID });
+          .send({ message: "Not found Request with id " + req.params.id });
       else {
         const offer = new Offer({
-          offerID: shortid.generate(),
+          offerID: "O" + (count + 1),
           offerStatus: "PENDING",
           remarks: req.body.remarks,
           offerDate: today,
-          request: data._id,
-          volunteer: req.body.volunteerID,
+          request: data.id,
+          volunteer: req.body.volunteer,
         });
 
         // Save Offer in the database
@@ -56,6 +80,10 @@ exports.create = (req, res) => {
         message: err.message || "Some error occurred while creating the Offer.",
       });
     });
+
+      }
+    }
+  );
 };
 
 // Retrieve all Offers from the database.

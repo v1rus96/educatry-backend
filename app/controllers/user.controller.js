@@ -9,25 +9,82 @@ exports.create = (req, res) => {
     return;
   }
 
-  const user = new User({
-    username: req.body.username,
-    password: req.body.password,
-    fullname: req.body.fullname,
-    email: req.body.email,
-    phone: req.body.phone,
-    role: req.body.role,
-    token: req.body.token
-  });
+  var count = 0;
+  User.find().count().then((data) => {
+    count = data;
+    });
+
+  //check if user exists
+    User.findOne
+    ({email
+        : req.body.email
+    }, function(err, user) {
+        if (err) {
+            res.status(500).send({
+                message: err.message || "Some error occurred while creating the User.",
+            });
+        }
+        else if (user) {
+            res.status(400).send({
+                message: "User already exists.",
+            });
+        }
+        else {
+
+            
 
   // Create a User
   if(req.body.role == "Volunteer") {
-    user.occupation = req.body.occupation;
-    user.dateOfBirth = req.body.dateOfBirth;
+    const user = new User({
+        volunteerID: "V" + (count+1),
+        username: req.body.username,
+        password: req.body.password,
+        fullname: req.body.fullname,
+        email: req.body.email,
+        phone: req.body.phone,
+        role: req.body.role,
+        // token: req.body.token,
+        occupation: req.body.occupation,
+        dateOfBirth: req.body.dateOfBirth,
+      });
+      user
+      .save(user)
+      .then((data) => {
+        res.send(data);
+      })
+      .catch((err) => {
+        res.status(500).send({
+          message: err.message || "Some error occurred while creating the User.",
+        });
+      });
   } else {
-    db.schools.findById(req.body.schoolID) 
+    db.schools.findById(req.params.schoolID) 
         .then((data) => {
-            user.school = data._id;
-            user.position = req.body.position;
+            const user = new User({
+                adminID: "A" + (count+1),
+                username: req.body.username,
+                password: req.body.password,
+                fullname: req.body.fullname,
+                email: req.body.email,
+                phone: req.body.phone,
+                role: req.body.role,
+                // token: req.body.token,
+                school: data._id,
+                position: req.body.position,
+                staffID: req.body.staffID,
+              });
+              user
+              .save(user)
+              .then((data) => {
+                res.send(data);
+              })
+              .catch((err) => {
+                res.status(500).send({
+                  message: err.message || "Some error occurred while creating the User.",
+                });
+              });
+            data.admins.push(user._id);
+            data.save();
         }
         ).catch((err) => {
             res.status(500).send({
@@ -37,16 +94,54 @@ exports.create = (req, res) => {
         );
     }
 
-    user
-    .save(user)
-    .then((data) => {
-      res.send(data);
-    })
-    .catch((err) => {
-      res.status(500).send({
-        message: err.message || "Some error occurred while creating the User.",
-      });
+        }
     });
+};
+
+//authenticate
+exports.authenticate = (req, res) => {
+    User.findOne
+    ({email
+        : req.body.email
+    }, function(err, user) {
+        if (err) throw err;
+        if (!user) {
+            res.status(401).send({success: false, msg: 'Authentication failed. User not found.'});
+        } else {
+            // check if password matches
+            if(user.password === req.body.password) {
+              
+                    // if user is found and password is right create a token
+                    var token = user.token;
+                    res.setHeader('Authorization', 'Bearer ' + token);
+                    
+                    //return user without password
+                    user.password = undefined;
+                    res.json(user);
+                    
+
+                } else {
+                    res.status(401).send({success: false, msg: 'Authentication failed. Wrong password.'});
+                }
+        }
+    });
+};
+
+//get current user
+exports.getCurrentUser = (req, res) => {
+    const token = req.headers.authorization.split(' ')[1];
+    console.log(token);
+    if (token) {
+        User.findById("6373738136d3037d345f7fff").then((user) => {
+            res.json({success: true, msg: 'Welcome in the member area ' + user.username + '!'});
+             }).catch((err) => {
+                res.status(500).send({
+                    message: err.message || "Some error occurred while retrieving users.",
+                });
+            });
+    } else {
+        return res.status(403).send({success: false, msg: 'No token provided.'});
+    }
 };
 
 // Retrieve all Users from the database.

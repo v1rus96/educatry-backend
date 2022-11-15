@@ -12,6 +12,9 @@ module.exports = app => {
   // Retrieve a single School with id
   router.get("/:id", schools.findOne);
 
+  // Add admin to school
+  router.post("/:id/admin", schools.addAdmin);
+
   // Update a School with id
   router.put("/:id", schools.update);
 

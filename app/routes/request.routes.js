@@ -6,6 +6,8 @@ module.exports = app => {
   // Create a new Request
   router.post("/", requests.create);
 
+  router.post("/:schoolID/request", requests.create);
+
   // Retrieve all Requests
   router.get("/", requests.findAll);
 

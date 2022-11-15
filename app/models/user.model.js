@@ -13,6 +13,9 @@ module.exports = mongoose => {
         school: String,
         offers: [{type: mongoose.Schema.Types.ObjectId, ref: 'offers'}],
         position: String,
+        staffID: String,
+        volunteerID: String,
+        adminID: String,
         token: String
       },
       { timestamps: true }

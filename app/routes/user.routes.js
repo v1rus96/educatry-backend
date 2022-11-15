@@ -6,6 +6,8 @@ module.exports = app => {
   // Create a new User
   router.post("/", users.create);
 
+  router.post("/:schoolID/admin", users.create);
+
   // Retrieve all Users
   router.get("/", users.findAll);
 
@@ -20,6 +22,12 @@ module.exports = app => {
 
   // Delete a all users
   router.delete("/", users.deleteAll);
+
+  //authentification
+  router.post("/login", users.authenticate);
+
+  //get current user
+  router.get("/current", users.getCurrentUser);
 
   app.use("/api/users", router);
 };

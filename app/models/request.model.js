@@ -8,6 +8,8 @@ module.exports = mongoose => {
         studentLevel: String,
         numberOfStudents: Number,
         status: String,
+        resourceType: String,
+        resourceQuantity: Number,
         offers: [{type: mongoose.Schema.Types.ObjectId, ref: 'offers'}]
       },
       { timestamps: true }

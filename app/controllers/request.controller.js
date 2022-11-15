@@ -9,15 +9,13 @@ exports.create = (req, res) => {
     return;
   }
 
+  var count = 0;
+  Request.find().count().then((data) => {
+    count = data;
+    });
+
   // Create a Request
-  /*
-  description: String,
-        date: String,
-        time: String,
-        studentLevel: String,
-        numberOfStudents: Number,
-        status: String,*/
-    db.schools.findById(req.body.schoolID, function(err, school) {
+    db.schools.findById(req.params.schoolID, function(err, school) {
         if (err) {
             res.status(500).send({
                 message: err.message || "Some error occurred while creating the Request.",
@@ -25,12 +23,15 @@ exports.create = (req, res) => {
         }
         else {
             const request = new Request({
+                requestID: "R" + (count + 1),
                 description: req.body.description,
                 date: req.body.date,
                 time: req.body.time,
                 studentLevel: req.body.studentLevel,
                 numberOfStudents: req.body.numberOfStudents,
                 status: req.body.status,
+                resourceType: req.body.resourceType,
+                resourceQuantity: req.body.resourceQuantity,
                 school: school._id
             });
             // Save Request in the database
@@ -58,7 +59,7 @@ exports.findAll = (req, res) => {
         ? { description: { $regex: new RegExp(description), $options: "i" } }
         : {};
     
-    Request.find(condition)
+    Request.find(condition).populate("offers")
         .then((data) => {
         res.send(data);
         })
@@ -73,7 +74,7 @@ exports.findAll = (req, res) => {
 exports.findOne = (req, res) => {
     const id = req.body.requestID;
 
-    Request.findById(id)
+    Request.findById(id).populate("offers")
         .then((data) => {
         if (!data)
             res.status(404).send({ message: "Not found Request with id " + id });

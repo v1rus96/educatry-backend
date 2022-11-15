@@ -6,6 +6,8 @@ module.exports = app => {
   // Create a new Offer
   router.post("/", offers.create);
 
+  router.post("/:id/offer", offers.create);
+
   // Retrieve all Offers
   router.get("/", offers.findAll);
 
